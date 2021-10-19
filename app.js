@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 
 app.get('/api/list', function (req, res) {
    post = new Post();
-   
+    
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
         var dbo = db.db(dbName);
