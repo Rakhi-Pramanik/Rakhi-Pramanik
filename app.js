@@ -1,34 +1,43 @@
+const path = require('path');
 const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require("mongoose");
 const MongoClient = require('mongodb').MongoClient;
 const test = require('assert');
 const Post = require('./model/post');
-const bodyParser = require('body-parser');
-const url = 'mongodb://localhost:27017';
+const bcrypt = require("bcrypt");
+const user = require('./model/user');
+const url = 'mongodb://localhost:27017/test';
+
+const userRoutes = require('./routes/user');
+const app = express();
 
 // Database Name
 const dbName = 'test';
-const app = express();
 
-    // MongoClient.connect(url)
-    // .then(() => {
-    //     console.log("connection closed with db");
-    // })
-    // .catch(() =>{
-    //     console.log("connection closed with db");
-    // });
 
-app.use(bodyParser.urlencoded({ extended: false }));
+mongoose
+  .connect(
+    url
+  )
+  .then(() => {
+    console.log("Connected to database!");
+  })
+  .catch(() => {
+    console.log("Connection failed!");
+  });
+
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With,Content-type, Accept");
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With,Content-type, Accept,Authorization");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     next();
 });
 
 app.get('/api/list', function (req, res) {
    post = new Post();
-    
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
         var dbo = db.db(dbName);
@@ -43,7 +52,6 @@ app.get('/api/list', function (req, res) {
         message: 'Success data',
         posts: post
     });
-    //   res.send(posts);
 });
 
 app.get("/api/lists", function (req, res) {
@@ -85,18 +93,34 @@ app.post("/api/posts", function (req, res) {
             }
         });
     });
-    // const post = new Post({
-    //     title: req.body.title,
-    //     content: req.body.content
-    // })
-    // console.log(post);
-    // dbName.col
-    //post.save();
     res.status(201).json({
         message: 'Post added successfully!',
     });
 });
 
-app.listen(3000, function () {
-    console.log('app listening on port 3000!');
-});
+app.post('/api/singup',(req, res, next) =>{
+    MongoClient.connect(url , function(err, db) {
+        if (err) throw err;
+        var dbo = db.db(dbName);
+        bcrypt.hash(req.body.password, 10)
+        .then( hash => {
+            const user = new user({
+                email: req.body.email,
+                password: hash
+            });
+            user.save()
+            .then(result =>{
+                res.status(201).json({
+                    message: 'User created!',
+                    result: result
+                });
+            }).catch( err => {
+                res.status(500).json({
+                    errror: err
+                })
+            })        
+        })
+    });
+})
+
+module.exports = app;
