@@ -6,6 +6,7 @@ const { Auth } = require("two-step-auth");
 var generator = require('generate-password');
 const router = express.Router();
 const UserProfile = require("../model/profile");
+
 var pword;
 var email;
 //signup
@@ -82,14 +83,29 @@ router.post("/api/login", function (req, res) {
 router.get("/api/forgetPassword", (req, res, next) => {
     email = req.query.id;
     console.log(req.query.id);
+    let time = new Date();
     UserProfile.findOne({ email: email })
-        .then(mail => {
-            console.log("mail", mail);
+    .then(mail => {
             var otp = generator.generate({
                 length: 4,
                 numbers: true
             });
-            console.log("pword ", otp);
+            let otpValid = time.setMinutes(time.getMinutes() + 10);
+
+            //update Column in Document
+            UserProfile.findOneAndUpdate(
+                { email: email },
+                {
+                    "$set": {
+                        otp: otp, otpValid: otpValid
+                    },
+                }
+            ).then((result, err) => {
+                console.log("result in forget: ", result);
+            }, err => {
+                console.log("err in forget : ", err);
+            });
+
             var transporter = nodemailer.createTransport({
                 host: "smtp.zoho.com",
                 service: "gmail",
@@ -154,32 +170,85 @@ router.get("/api/verification", (req, res, next) => {
 
 router.post("/api/otpConfirm", (req, res, next) => {
     let userpword = req.body.otp;
-    if (pword == userpword) {
-        console.log("email", email);
-        res.status(200).json({
-            message: "Success",
-            response: true,
-            data: {
-                message: "OTP verification Successfull !"
-            }
-        })
-    }
+    const d = new Date();
+    let currenttime = d.getTime();
+    email = '';
+    console.log("time : ", currenttime, "userpword : ", userpword);
+    UserProfile.findOne({ otp: userpword }).then(result => {
+        
+        email = result.email;
+        otpExpiredTime = result.otpValid.getTime();
+        console.log("otpExpiredTime : ", otpExpiredTime);
+        console.log(result);
+
+        if (otpExpiredTime > currenttime) {
+            console.log("true");
+            res.status(200).json({
+                message: "Success",
+                response: true,
+                data: {
+                    message: "OTP verification Successfull !",
+                    email: email
+                }
+            });
+
+            UserProfile.findOneAndUpdate(
+                { email: email },
+                {
+                    "$set": {
+                        otp: '', otpValid: ''
+                    },
+                }
+            ).then((result, err) => {
+                console.log("result : ", result);
+
+                if(err){
+                    console.log("err : ", err);
+                }
+            });
+        }
+        else {
+            console.log("false");
+            res.status(200).json({
+                message: "Success",
+                response: false,
+                data: {
+                    message: "OTP Expired !",
+                    email: email
+                }
+            })
+        }
+    })
 });
 
 router.put("/api/passwordReset", (req, res) => {
-    const updatePassword = new UserProfile({
-        password: req.body.newPassword
-    });
-    UserProfile.findOne({})
-    UserProfile.updateOne({ email: email }, updatePassword)
-        .then(userData => {
-            if (userData) {
-                res.status(200).json({
-                    message: "Password Update Success!",
-                    response: true,
-                })
+    console.log(req.body.password,"email : ",req.body.email);
+
+    bcrypt.hash(req.body.password, 10)
+    .then(hash => {
+        UserProfile.findOneAndUpdate(
+            { email: req.body.email },
+            {
+                "$set": {
+                    password: hash
+                },
             }
-        })
+        ).then((result, err) => {
+            console.log("result in passwordReset: ", result);
+            res.json({
+                message: 'Password Reset Successfull',
+                response: true
+            })
+        }, err => {
+            console.log("err in passwordReset : ", err);
+            res.json({
+                message: 'Password Reset Unsuccessfull,Try again Later!',
+                response: true
+            })
+        });
+
+    })
+
 
 })
 module.exports = router;

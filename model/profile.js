@@ -8,6 +8,8 @@ const userProfileSchema = mongoose.Schema({
     mobile: { type: String, require: true, unique: true },
     password: { type: String, require: true, unique: true },
     email: { type: String, require: true, unique: true },
+    otp: { type: String},
+    otpValid: { type: Date}
 });
 
 userProfileSchema.plugin(uniqueValidator);

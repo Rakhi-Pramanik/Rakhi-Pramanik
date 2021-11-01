@@ -15,6 +15,7 @@ router.put("/api/updateUserDetail",checkAuth, (req, res) => {
         password: req.body.password,
         email: req.body.email
     });
+    
     UserProfile.updateOne({_id: req.query.id}, updateUser)
         .then(userData => {
             console.log("user: ",userData);
