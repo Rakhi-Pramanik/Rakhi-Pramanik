@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const HomeSetting = require('../model/homeSetting');
 
-router.post("/api/bannerUpdate",upload.single('file'),(req, res, next) => {
+router.post("/api/bannerUpdate",(req, res, next) => {
     // let imagePath = req.body.imagePath;
      const url = req.protocol + "://" + req.get("host");
      console.log("req.body ",req.body);
@@ -30,3 +30,4 @@ router.post("/api/bannerUpdate",upload.single('file'),(req, res, next) => {
     //      });
     //    });
    });
+   module.exports = router;

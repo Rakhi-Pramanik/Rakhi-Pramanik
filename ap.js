@@ -4,7 +4,7 @@ const ratelimiter = require('express-rate-limit');
 
 const userRoutes = require('./routes/userProfile');
 const userAuth = require('./routes/user');
-
+const homeSetting = require('./routes/homeSetting');
 var mongoose = require('mongoose');
 var mongoDB = 'mongodb://127.0.0.1/test';
 var db = mongoose.connection;
@@ -37,6 +37,7 @@ app.use((req, res, next) => {
 //routes
 app.use(userRoutes);
 app.use(userAuth);
+app.use(homeSetting);
 
 app.listen(port, function () {
     console.log('app listening on port 3000!');
