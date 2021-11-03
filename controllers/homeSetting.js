@@ -1,19 +1,19 @@
 const HomeSetting = require('../model/homeSetting');
 
 exports.updatePost = (req, res, next) => {
-    let imagePath = req.body.imagePath;
+   // let imagePath = req.body.imagePath;
+    const url = req.protocol + "://" + req.get("host");
     console.log("req.body ",req.body);
-    if (req.file) {
-      const url = req.protocol + "://" + req.get("host");
-      imagePath = url + "/images/" + req.file.filename;
-    }
+    // if (req.file) {
+    //   const url = req.protocol + "://" + req.get("host");
+    //   imagePath = url + "/images/" + req.file.filename;
+    // }
     const post = new Post({
-      _id: req.body.id,
       title: req.body.title,
-      content: req.body.content,
-      imagePath: imagePath,
-      creator: req.userData.userId
+      description: req.body.content,
+      bannerImg: url,
     });
+    console.log(post);
     Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
       .then(result => {
         if (result.n > 0) {
