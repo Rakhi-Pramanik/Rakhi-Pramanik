@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require('express');
 const bodyParser = require('body-parser');
 const ratelimiter = require('express-rate-limit');
@@ -14,7 +15,7 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
+app.use("/images", express.static(path.join("backend/images")));
 //to limit request from one source
 const limiter = ratelimiter({
     windowMs: 15 * 60 * 1000,
