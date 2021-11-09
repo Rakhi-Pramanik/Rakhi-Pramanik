@@ -1,8 +1,10 @@
 const express = require('express');
 const multer = require("multer");
+var upload = multer({ dest: '../images/' })
 
 const router = express.Router();
 const HomeSetting = require('../model/homeSetting');
+
 
 const MIME_TYPE_MAP = {
   "image/png": "png",
@@ -12,14 +14,12 @@ const MIME_TYPE_MAP = {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    console.log("req : ", req, "file : ", file);
     const isValid = MIME_TYPE_MAP[file.mimetype];
     let error = new Error("Invalid mime type");
     if (isValid) {
       error = null;
     }
-    cb(error, "uploads/");
-    console.log("file : ", file);
+    cb(error, "images");
   },
   filename: (req, file, cb) => {
     const name = file.originalname
@@ -31,43 +31,74 @@ const storage = multer.diskStorage({
   }
 });
 
-router.post("/api/bannerUpdate",
-multer({ storage: storage }).single('image'),
- (req, res, next) => {
-   
+router.post('/api/bannerUpdate',multer({ storage: storage }).single("bannerImage"), async (req, res, next) => {
+  console.log("req.body ",req.file);
+  
+  if (req.file) {
      const url = req.protocol + "://" + req.get("host");
-     console.log("req.body ",req.body, url);
-     
-    //  const post = new Post({
-    //    title: req.body.title,
-    //    content: req.body.description,
-    //    image: url + "/images/" + req.file.filename,
-    //  });
-    //  console.log("data post: ",post);
-     res.status(200).send({
-       message: 'success'
-     })
-   });
-
-   router.post(
-    "",
-    multer({ storage: storage }).single("image"),
-    (req, res, next) => {
-      const url = req.protocol + "://" + req.get("host");
-      const post = new Post({
-        title: req.body.title,
-        content: req.body.content,
-        imagePath: url + "/images/" + req.file.filename
-      });
-      post.save().then(createdPost => {
-        res.status(201).json({
-          message: "Post added successfully",
-          post: {
-            ...createdPost,
-            id: createdPost._id
-          }
-        });
-      });
+     imagePath = url + "/images/" + req.file.filename;
+   }
+   
+   const banner = new HomeSetting({
+    text_title: 
+    {
+      'banner': req.body.title
+    },
+    text_desc: 
+    {
+        'description': req.body.description,
+        'image': imagePath,
     }
-  );
-   module.exports = router;
+    //  title: req.body.title,
+    //  description: req.body.description,
+    //  image: imagePath,
+    });
+    
+    const createdBanner = await banner.save()
+    .then(result =>{
+      console.log("res : ", result);
+      if(result){
+        res.status(201).json({
+          ...banner._doc,
+          message: 'Banner Uploaded Successfully.',
+          response: true
+        })
+      }else{
+        console.log("res data  : ", result);
+      }
+    })
+    .catch( err =>{
+      console.log("Errr ==========> ", err);
+    })
+  });
+
+
+router.post('/api/seoDetails', async (req, res) => {
+const seoData = new HomeSetting({
+  text_title: 
+    {
+      'banner': req.body.title
+    },
+    text_desc: 
+    {
+        'description': req.body.description
+    }
+});
+const seoDataUpdate = await seoData
+.save()
+.then( result => {
+  if(result){
+    res.status(201).json({
+      ...seoData._doc,
+      message: 'Seo Details updated Successfully.',
+      response: true
+    })
+  }else{
+    console.log("res data  : ", result);
+  }
+})
+
+})
+
+
+module.exports = router;

@@ -1,30 +1,24 @@
 const HomeSetting = require('../model/homeSetting');
 
-exports.updatePost = (req, res, next) => {
-   // let imagePath = req.body.imagePath;
+exports.updatePost = async (req, res, next) => {
+   const { name } = req.body;
     const url = req.protocol + "://" + req.get("host");
     console.log("req.body ",req.body);
-    // if (req.file) {
-    //   const url = req.protocol + "://" + req.get("host");
-    //   imagePath = url + "/images/" + req.file.filename;
-    // }
-    const post = new Post({
+
+    if (req.file) {
+      const url = req.protocol + "://" + req.get("host");
+      imagePath = url + "/images/" + req.file.filename;
+    }
+
+    const banner = new HomeSetting({
       title: req.body.title,
       description: req.body.content,
-      bannerImg: url,
+      image: url,
     });
-    console.log(post);
-    Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
-      .then(result => {
-        if (result.n > 0) {
-          res.status(200).json({ message: "Update successful!" });
-        } else {
-          res.status(401).json({ message: "Not authorized!" });
-        }
-      })
-      .catch(error => {
-        res.status(500).json({
-          message: "Couldn't udpate post!"
-        });
-      });
-  };
+
+    const createdBanner = await banner.save();
+    res.status(201).json({
+      ...banner._doc
+    })
+  }
+ 

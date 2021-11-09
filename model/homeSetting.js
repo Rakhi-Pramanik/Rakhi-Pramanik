@@ -1,10 +1,20 @@
 const mongoose = require("mongoose");
-// const uniqueValidator = require("mongoose-unique-validator");
 const homeSettingSchema = mongoose.Schema({
-    bannerImg: { data: Buffer, contentType: String },
-    title: { type: String, require: true },
-    description: { type: String, require: true },
+   
+   
+    // image: { type: String, require: true },
+    // title: { type: String, require: true },
+    // description: { type: String, require: true },
+
+    // seoTitle: { type: String, require: true },
+    // seoDescription: { type: String, require: true}
+
+    text_title: {
+        type: Object, require: true
+    },
+    text_desc: {
+        type: Object, require: true
+    }
 });
 
-// userProfileSchema.plugin(uniqueValidator);
 module.exports = mongoose.model("HomeSetting",homeSettingSchema );

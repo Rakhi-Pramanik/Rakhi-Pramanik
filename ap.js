@@ -39,6 +39,7 @@ app.use((req, res, next) => {
 app.use(userRoutes);
 app.use(userAuth);
 app.use(homeSetting);
+app.use(express.static(path.join(__dirname, 'images')));
 
 app.listen(port, function () {
     console.log('app listening on port 3000!');
