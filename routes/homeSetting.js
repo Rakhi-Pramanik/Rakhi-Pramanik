@@ -31,74 +31,79 @@ const storage = multer.diskStorage({
   }
 });
 
-router.post('/api/bannerUpdate',multer({ storage: storage }).single("bannerImage"), async (req, res, next) => {
-  console.log("req.body ",req.file);
-  
+router.post('/api/bannerUpdate', multer({ storage: storage }).single("bannerImage"), async (req, res, next) => {
+  console.log("req.body ", req.file);
+
   if (req.file) {
-     const url = req.protocol + "://" + req.get("host");
-     imagePath = url + "/images/" + req.file.filename;
-   }
-   
-   const banner = new HomeSetting({
-    text_title: 
-    {
-      'banner': req.body.title
-    },
-    text_desc: 
-    {
-        'description': req.body.description,
-        'image': imagePath,
-    }
-    //  title: req.body.title,
-    //  description: req.body.description,
-    //  image: imagePath,
-    });
-    
-    const createdBanner = await banner.save()
-    .then(result =>{
+    const url = req.protocol + "://" + req.get("host");
+    imagePath = url + "/images/" + req.file.filename;
+  }
+
+  const banner = new HomeSetting({
+    text_title: { 'banner': req.body.title },
+    text_desc:  { 'description': req.body.description, 'image': imagePath }
+  });
+
+  const createdBanner = await banner.save()
+    .then(result => {
       console.log("res : ", result);
-      if(result){
+      if (result) {
         res.status(201).json({
           ...banner._doc,
           message: 'Banner Uploaded Successfully.',
           response: true
         })
-      }else{
+      } else {
         console.log("res data  : ", result);
       }
     })
-    .catch( err =>{
+    .catch(err => {
       console.log("Errr ==========> ", err);
     })
-  });
+});
 
 
 router.post('/api/seoDetails', async (req, res) => {
-const seoData = new HomeSetting({
-  text_title: 
+  const seoData = new HomeSetting({
+    text_title:
     {
-      'banner': req.body.title
+      'metaData': req.body.title
     },
-    text_desc: 
+    text_desc:
     {
-        'description': req.body.description
+      'description': req.body.description
     }
-});
-const seoDataUpdate = await seoData
-.save()
-.then( result => {
-  if(result){
-    res.status(201).json({
-      ...seoData._doc,
-      message: 'Seo Details updated Successfully.',
-      response: true
+  });
+  const seoDataUpdate = await seoData
+    .save()
+    .then(result => {
+      if (result) {
+        res.status(201).json({
+          ...seoData._doc,
+          message: 'Seo Details updated Successfully.',
+          response: true
+        })
+      } else {
+        console.log("res data  : ", result);
+      }
     })
-  }else{
-    console.log("res data  : ", result);
-  }
-})
+});
 
-})
-
-
+router.get("/api/metaInfo", (req, res) => {
+    HomeSetting.find()
+    .then( metaData => {
+      if(metaData){
+        res.status(200).json({
+          message: 'success',
+          data: metaData
+        })
+        for( const key in metaData){
+          console.log(`${key}: ${metaData[key]}`);
+        }
+      }
+    })
+    .catch( err => {
+      console.log("err : ", err);
+    });  
+});
 module.exports = router;
