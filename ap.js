@@ -15,8 +15,8 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use("/images", express.static(path.join("backend/images")));
-//to limit request from one source
+app.use(express.static(path.join(__dirname, 'images')));
+
 const limiter = ratelimiter({
     windowMs: 15 * 60 * 1000,
     max: 50
@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 app.use(userRoutes);
 app.use(userAuth);
 app.use(homeSetting);
-app.use(express.static(path.join(__dirname, 'images')));
+
 
 app.listen(port, function () {
     console.log('app listening on port 3000!');

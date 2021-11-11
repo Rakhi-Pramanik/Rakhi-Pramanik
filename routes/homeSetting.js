@@ -31,6 +31,24 @@ const storage = multer.diskStorage({
   }
 });
 
+router.get('/api/banner', async( req, res) => {
+   HomeSetting.find()
+  .then( data =>{
+    if(data){
+      res.status(200).json({
+        message: 'success',
+        data: data,
+        response: true
+      });
+    }
+  }).catch(err =>{
+    res.status(500).json({
+      message: 'Unsuccessfull',
+     response: false
+    })
+  })
+});
+
 router.post('/api/bannerUpdate', multer({ storage: storage }).single("bannerImage"), async (req, res, next) => {
   console.log("req.body ", req.file);
 
@@ -97,13 +115,21 @@ router.get("/api/metaInfo", (req, res) => {
           message: 'success',
           data: metaData
         })
-        for( const key in metaData){
-          console.log(`${key}: ${metaData[key]}`);
-        }
+    console.log("res data : " ,metaData);
+        // for( i=0; i <= metaData.length; i ++){
+        //   if(metaData[i].text_title){
+        //     console.log("meta object : ",metaData[i].text_title);
+        //   }
+        //   else{
+        //     console.log("not found");
+        //   }
+        // }
       }
     })
     .catch( err => {
       console.log("err : ", err);
     });  
 });
+
+
 module.exports = router;
